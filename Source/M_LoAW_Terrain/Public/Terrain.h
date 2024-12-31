@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "StructDefine.h"
+#include "TerrainStructDefine.h"
 #include "FastNoiseWrapper.h"
 
 #include "CoreMinimal.h"
@@ -242,10 +242,10 @@ protected:
 	float DesertBaseRatio = 0.03;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom|Terrain", meta = (ClampMin = "-1.0", ClampMax = "1.0"))
 	float SwampBaseRatio = 0.03;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom|Terrain")
+	/*UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom|Terrain")
 	float TerrainBlendOffset = 0.0;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom|Terrain", meta = (ClampMin = "1.0"))
-	float TerrainBlendSharpness = 50.0;
+	float TerrainBlendSharpness = 50.0;*/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom|Terrain", meta = (ClampMin = "1.0"))
 	float WaterBankSharpness = 50.0;
 
@@ -299,6 +299,12 @@ protected:
 	TArray<FVector> Normals;
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Custom|Render|Land")
 	TArray<FLinearColor> VertexColors;
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Custom|Render|Land")
+	TArray<FVector2D> UV1;
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Custom|Render|Land")
+	TArray<FVector2D> UV2;
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Custom|Render|Land")
+	TArray<FVector2D> UV3;
 
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Custom|Render|Water")
 	TArray<FVector> WaterVertices;
@@ -391,7 +397,7 @@ private:
 	float GetNoise2DStd(UFastNoiseWrapper* NWP, float X, float Y, float scale);
 	void CreateVertex(float X, float Y, float& OutRatioStd, float& OutRatio);
 	void CreateUV(float X, float Y);
-	void CreateVertexColorsForAMTA(float RatioStd, float X, float Y);
+	void CreateVertexColorsForAMTB(float RatioStd, float X, float Y);
 	void AddTreeValues(float X, float Y);
 
 	//Triangles create

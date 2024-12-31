@@ -1,6 +1,5 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "HexGridCreator.h"
 #include "FlowControlUtility.h"
 
@@ -56,6 +55,7 @@ void AHexGridCreator::CreateHexGridFlow()
 		WriteParamsToFile();
 		break;
 	case Enum_HexGridCreatorWorkflowState::Done:
+		UE_LOG(HexGridCreator, Log, TEXT("Create HexGrid data done."));
 		break;
 	case Enum_HexGridCreatorWorkflowState::Error:
 		UE_LOG(HexGridCreator, Warning, TEXT("CreateHexGridFlow Error!"));
@@ -122,12 +122,12 @@ void AHexGridCreator::InitLoopData()
 
 void AHexGridCreator::InitAxialDirections()
 {
-	AxialDirectionVectors.Add(FIntPoint(1.0, 0.0));
-	AxialDirectionVectors.Add(FIntPoint(1.0, -1.0));
-	AxialDirectionVectors.Add(FIntPoint(0.0, -1.0));
-	AxialDirectionVectors.Add(FIntPoint(-1.0, 0.0));
-	AxialDirectionVectors.Add(FIntPoint(-1.0, 1.0));
-	AxialDirectionVectors.Add(FIntPoint(0.0, 1.0));
+	AxialDirectionVectors.Add(FIntPoint(1, 0));
+	AxialDirectionVectors.Add(FIntPoint(1, -1));
+	AxialDirectionVectors.Add(FIntPoint(0, -1));
+	AxialDirectionVectors.Add(FIntPoint(-1, 0));
+	AxialDirectionVectors.Add(FIntPoint(-1, 1));
+	AxialDirectionVectors.Add(FIntPoint(0, 1));
 }
 
 FIntPoint AHexGridCreator::AxialAdd(const FIntPoint& Hex, const FIntPoint& Vec)
@@ -260,7 +260,7 @@ void AHexGridCreator::InitGridCenter()
 	Tiles.Add(Data);
 
 	TileIndices.Empty();
-	TileIndices.Add(FIntPoint(0, 0), 0.0);
+	TileIndices.Add(FIntPoint(0, 0), 0);
 
 }
 
@@ -369,32 +369,6 @@ void AHexGridCreator::SetTileNeighbor(int32 TileIndex, int32 Radius, int32 DirIn
 	FIntPoint Hex = AxialNeighbor(TmpHex, DirIndex);
 	TmpHex.X = Hex.X;
 	TmpHex.Y = Hex.Y;
-}
-
-void AHexGridCreator::CreateFilePath(const FString& RelPath, FString& FullPath)
-{
-	FullPath = FPaths::ProjectDir().Append(RelPath);
-	FString Path = FPaths::GetPath(FullPath);
-	if (!FPaths::DirectoryExists(Path)) {
-		if (std::filesystem::create_directories(*Path)) {
-			UE_LOG(HexGridCreator, Log, TEXT("Create directory %s success."), *Path);
-		}
-	}
-}
-
-void AHexGridCreator::WritePipeDelimiter(std::ofstream& ofs)
-{
-	ofs << TCHAR_TO_ANSI(*PipeDelim);
-}
-
-void AHexGridCreator::WriteColonDelimiter(std::ofstream& ofs)
-{
-	ofs << TCHAR_TO_ANSI(*ColonDelim);
-}
-
-void AHexGridCreator::WriteLineEnd(std::ofstream& ofs)
-{
-	ofs << std::endl;
 }
 
 void AHexGridCreator::WriteTilesToFile()

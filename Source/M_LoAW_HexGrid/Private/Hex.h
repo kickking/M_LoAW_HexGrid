@@ -29,6 +29,9 @@ class Hex
 {
 private:
 	HexCoord Coord;
+	TArray<FIntPoint> AxialDirectionVectors = { FIntPoint(1,0), FIntPoint(1,-1),
+		FIntPoint(0,-1), FIntPoint(-1,0),
+		FIntPoint(-1,1), FIntPoint(0,1) };
 
 private:
 	void UpdateCoordFloat(float a, float b);
@@ -50,7 +53,11 @@ public:
 	HexCoord GetCoord();
 
 	static Hex Round(const Hex& InHex);
+	static Hex Add(const Hex& InHexA, const Hex& InHexB);
 	static Hex Subtract(const Hex& InHexA, const Hex& InHexB);
+	static Hex Scale(const Hex& InHex, float Factor);
+	static Hex Direction(int32 Direction);
+	static Hex Neighbor(const Hex& InHex, int32 direction);
 	static float Distance(const Hex& InHexA, const Hex& InHexB);
 	static Hex PosToHex(const FVector2D& Point, float Size);
 
@@ -67,3 +74,4 @@ public:
 
 	~Hex();
 };
+

@@ -459,7 +459,7 @@ void ATerrain::CreateVertices()
 
 			CreateVertex(X, Y, RatioStd, Ratio);
 			CreateUV(X, Y);
-			CreateVertexColorsForAMTA(RatioStd, X, Y);
+			CreateVertexColorsForAMTB(RatioStd, X, Y);
 			AddTreeValues(X, Y);
 
 			ProgressCurrent = CreateVerticesLoopData.Count;
@@ -535,8 +535,9 @@ float ATerrain::GetWaterRatio(float X, float Y)
 	FStructHeightMapping mapping;
 	FStructHeightMapping groundMapping;
 	MappingByLevel(WaterLevel, WaterRangeMapping, mapping);
-	MappingByLevel(WaterLevel, WaterGroundRangeMapping, groundMapping);
-	float ratio = GetHeightRatio(NWWater, mapping, X, Y) + GetHeightRatio(NWWater, groundMapping, X, Y);
+	//MappingByLevel(WaterLevel, WaterGroundRangeMapping, groundMapping);
+	//float ratio = GetHeightRatio(NWWater, mapping, X, Y) + GetHeightRatio(NWWater, groundMapping, X, Y);
+	float ratio = GetHeightRatio(NWWater, mapping, X, Y);
 	ratio = ratio > 0.0 ? 0.0 : ratio;
 
 	//cal water bank
@@ -583,10 +584,11 @@ void ATerrain::CreateUV(float X, float Y)
 	float UVx = X * UVScale;
 	float UVy = Y * UVScale;
 	UVs.Add(FVector2D(UVx, UVy));
+	UV1.Add(FVector2D(1.0, 0.0));
 }
 
 //Create vertex Color(R:Altidude G:Moisture B:Temperature A:Biomes)
-void ATerrain::CreateVertexColorsForAMTA(float RatioStd, float X, float Y)
+void ATerrain::CreateVertexColorsForAMTB(float RatioStd, float X, float Y)
 {
 	float Moisture = GetNoise2DStd(NWMoisture, X, Y, 3.0);
 	float Temperature = GetNoise2DStd(NWTemperature, X, Y, 3.0);
@@ -803,8 +805,10 @@ void ATerrain::NormalizeNormals()
 
 void ATerrain::CreateTerrainMesh()
 {
-	TerrainMesh->CreateMeshSection_LinearColor(0, Vertices, Triangles, Normals, UVs, VertexColors,
-		TArray<FProcMeshTangent>(), true);
+	/*TerrainMesh->CreateMeshSection_LinearColor(0, Vertices, Triangles, Normals, UVs, VertexColors,
+		TArray<FProcMeshTangent>(), true);*/
+	TerrainMesh->CreateMeshSection_LinearColor(0, Vertices, Triangles, Normals, UVs, UV1, UV2, UV3,
+		VertexColors, TArray<FProcMeshTangent>(), true);
 	TerrainMesh->bUseComplexAsSimpleCollision = true;
 	TerrainMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
 	TerrainMesh->SetCollisionObjectType(ECollisionChannel::ECC_WorldStatic);

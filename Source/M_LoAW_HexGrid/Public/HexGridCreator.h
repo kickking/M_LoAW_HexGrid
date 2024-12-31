@@ -2,7 +2,8 @@
 
 #pragma once
 
-#include "StructDefine.h"
+#include "TerrainStructDefine.h"
+#include "HexGridStructDefine.h"
 #include "CoreMinimal.h"
 #include "DataCreator.h"
 #include "HexGridCreator.generated.h"
@@ -36,12 +37,6 @@ public:
 	M_LOAW_HEXGRID_API virtual void CreateData() override;
 
 private:
-	//Delimiter
-	FString PipeDelim = FString(TEXT("|"));
-	FString CommaDelim = FString(TEXT(","));
-	FString SpaceDelim = FString(TEXT(" "));
-	FString ColonDelim = FString(TEXT(":"));
-
 	FVector QDirection;
 	FVector RDirection;
 	FVector SDirection;
@@ -80,12 +75,12 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom|Params", meta = (ClampMin = "1"))
 	int32 GridRange = 10;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom|Params", meta = (ClampMin = "1"))
-	int32 NeighborRange = 5;
+	int32 NeighborRange = 4;
 
 	//Path
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom|Path")
-	//FString DataFileRelPath = FString(TEXT("Plugins/LoAW_Asset/Content/Data/"));
-	FString DataFileRelPath = FString(TEXT("Data/"));
+	//FString DataFileRelPath = FString(TEXT("Plugins/LoAW_Asset/Content/Data/HexGrid/"));
+	FString DataFileRelPath = FString(TEXT("Data/HexGrid/"));
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom|Path")
 	FString TilesDataFileName = FString(TEXT("Tiles.data"));
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom|Path")
@@ -99,18 +94,18 @@ protected:
 
 	//Loop BP
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom|Loop")
-	FStructLoopData SpiralCreateCenterLoopData;
+	struct FStructLoopData SpiralCreateCenterLoopData;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom|Loop")
-	FStructLoopData SpiralCreateNeighborsLoopData;
+	struct FStructLoopData SpiralCreateNeighborsLoopData;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom|Loop")
-	FStructLoopData WriteTilesLoopData;
+	struct FStructLoopData WriteTilesLoopData;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom|Loop")
-	FStructLoopData WriteNeighborsLoopData;
+	struct FStructLoopData WriteNeighborsLoopData;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom|Loop")
-	FStructLoopData WriteTileIndicesLoopData;
+	struct FStructLoopData WriteTileIndicesLoopData;
 
 	//Workflow
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadWrite)
 	Enum_HexGridCreatorWorkflowState WorkflowState = Enum_HexGridCreatorWorkflowState::Done;
 
 	//Progress
@@ -153,12 +148,6 @@ private:
 	void AddTileNeighbor(int32 TileIndex, int32 Radius);
 	void SetTileNeighbor(int32 TileIndex, int32 Radius, int32 DirIndex);
 
-	//For write data
-	void CreateFilePath(const FString& RelPath, FString& FullPath);
-	void WritePipeDelimiter(std::ofstream& ofs);
-	void WriteColonDelimiter(std::ofstream& ofs);
-	void WriteLineEnd(std::ofstream& ofs);
-
 	//Write hex tiles data to file
 	void WriteTilesToFile();
 	void WriteTiles(std::ofstream& ofs);
@@ -186,13 +175,12 @@ private:
 	void WriteParams(std::ofstream& ofs);
 	void WriteParamsContent(std::ofstream& ofs);
 
-protected:
-	UFUNCTION(BlueprintCallable)
-	void GetProgress(float& Out_Progress);
-
 public:
 	UFUNCTION(BlueprintCallable)
-	bool IsInWorkingState()
+	void GetProgress(float& Out_Progress);
+	
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE bool IsInWorkingState()
 	{
 		return WorkflowState < Enum_HexGridCreatorWorkflowState::Done;
 	}

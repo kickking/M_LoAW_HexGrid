@@ -2,7 +2,7 @@
 
 
 #include "FlowControlUtility.h"
-#include "StructDefine.h"
+#include "TerrainStructDefine.h"
 
 FlowControlUtility::FlowControlUtility()
 {

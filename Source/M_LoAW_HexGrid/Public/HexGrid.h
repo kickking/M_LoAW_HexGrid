@@ -3,7 +3,8 @@
 #pragma once
 
 #include "Hex.h"
-#include "M_LoAW_Terrain/Public/StructDefine.h"
+#include "TerrainStructDefine.h"
+#include "HexGridStructDefine.h"
 
 //#include <iostream>
 #include <fstream>
@@ -26,15 +27,15 @@ enum class Enum_HexGridWorkflowState : uint8
 	WaitTerrain,
 	SetTilesPosZ,
 	CalTilesNormal,
-	SetTilesWalkingBlockLevel,
-	SetTilesWalkingBlockLevelEx,
-	InitCheckTerrainWalkingConnection,
-	BreakMaxWalkingBlockTilesToChunk,
-	CheckChunksWalkingConnection,
+	SetTilesAreaBlockLevel,
+	SetTilesAreaBlockLevelEx,
+	InitCheckTerrainAreaConnection,
+	BreakMaxAreaBlockTilesToChunk,
+	CheckChunksAreaConnection,
 	FindTilesIsland,
 	SetTilesBuildingBlockLevel,
 	SetTilesBuildingBlockLevelEx,
-	DrawMesh,
+	AddInstances,
 	Done,
 	Error
 };
@@ -43,7 +44,7 @@ UENUM(BlueprintType)
 enum class Enum_BlockMode : uint8
 {
 	BuildingBlock,
-	WalkingBlock,
+	AreaBlock,
 	FlyingBlock,
 };
 
@@ -74,10 +75,12 @@ private:
 
 	//Mouse over
 	Hex MouseOverHex;
+	int32 MouseOverShowRadius = 1;
 
-	//Walking Block data
-	int32 WalkingBlockLevelMax = 0;
-	TSet<int32> MaxWalkingBlockTileIndices;
+	//Area Block data
+	int32 AreaBlockLevelMax = 0;
+	TSet<int32> MaxAreaBlockTileIndices;
+	TArray<FStructLoopData> AreaBlockLevelExLoopDatas;
 
 	//Create tiles vertices tmp data
 	TArray<FVector> TileVerticesVectors;
@@ -88,11 +91,12 @@ private:
 
 	//Building Block data
 	int32 BuildingBlockLevelMax = 0;
+	TArray<FStructLoopData> BuildingBlockLevelExLoopDatas;
 
 	//Check Terrain connection data
-	TSet<int32> CheckWalkingConnectionReached;
-	TArray<TSet<int32>> MaxWalkingBlockTileChunks;
-	TQueue<int32> CheckWalkingConnectionFrontier;
+	TSet<int32> CheckAreaConnectionReached;
+	TArray<TSet<int32>> MaxAreaBlockTileChunks;
+	TQueue<int32> CheckAreaConnectionFrontier;
 
 	//controll
 	APlayerController* Controller;
@@ -112,13 +116,13 @@ protected:
 
 	//Path
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom|Path")
-	FString ParamsDataPath = FString(TEXT("Data/Params.data"));
+	FString ParamsDataPath = FString(TEXT("Data/HexGrid/Params.data"));
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom|Path")
-	FString TileIndicesDataPath = FString(TEXT("Data/TileIndices.data"));
+	FString TileIndicesDataPath = FString(TEXT("Data/HexGrid/TileIndices.data"));
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom|Path")
-	FString TilesDataPath = FString(TEXT("Data/Tiles.data"));
+	FString TilesDataPath = FString(TEXT("Data/HexGrid/Tiles.data"));
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom|Path")
-	FString NeighborsDataPathPrefix = FString(TEXT("Data/N"));
+	FString NeighborsDataPathPrefix = FString(TEXT("Data/HexGrid/N"));
 
 	//Loop BP
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom|Loop")
@@ -134,11 +138,11 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom|Loop")
 	FStructLoopData CalTilesNormalLoopData;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom|Loop")
-	FStructLoopData SetTilesWalkingBlockLevelLoopData;
+	FStructLoopData SetTilesAreaBlockLevelLoopData;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom|Loop")
-	FStructLoopData SetTilesWalkingBlockLevelExLoopData;
+	FStructLoopData SetTilesAreaBlockLevelExLoopData;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom|Loop")
-	FStructLoopData BreakMaxWalkingBlockTilesToChunkLoopData;
+	FStructLoopData BreakMaxAreaBlockTilesToChunkLoopData;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom|Loop")
 	FStructLoopData FindTilesIslandLoopData;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom|Loop")
@@ -164,7 +168,7 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom|Common")
 	bool bShowGrid = false;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom|Common")
-	Enum_BlockMode GridShowMode = Enum_BlockMode::WalkingBlock;
+	Enum_BlockMode GridShowMode = Enum_BlockMode::AreaBlock;
 
 	//Params
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom|Params")
@@ -174,7 +178,7 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Custom|Params")
 	int32 GridRange = 10;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Custom|Params")
-	int32 NeighborRange = 5;
+	int32 NeighborRange = 4;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Custom|Params")
 	FRotator HexInstMeshRot = FRotator(0.0, 30.0, 0.0);
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Custom|Params")
@@ -189,21 +193,25 @@ protected:
 	TArray<int32> MouseOverTriangles;
 
 	//MouseOver param
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom|MouseOver", meta = (ClampMin = "0"))
-	int32 MouseOverShowRadius = 1;
+	/*UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom|MouseOver", meta = (ClampMin = "0"))
+	int32 MouseOverShowRadiusMax = 20;*/
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Custom|MouseOver")
 	float MouseOverInstMeshOffsetZ = 2.0;
 
 	//Block
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom|Block|Walking", meta = (ClampMin = "0.0", ClampMax = "1.0"))
-	float WalkingBlockAltitudeRatio = 0.3;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom|Block|Walking", meta = (ClampMin = "0.0", ClampMax = "1.0"))
-	float WalkingBlockSlopeRatio = 0.3;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom|Block|Area", meta = (ClampMin = "0.0", ClampMax = "1.0"))
+	float AreaBlockAltitudeRatio = 0.3;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom|Block|Area", meta = (ClampMin = "0.0", ClampMax = "1.0"))
+	float AreaBlockSlopeRatio = 0.3;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom|Block|Area", meta = (ClampMin = "0"))
+	int32 AreaBlockExTimes = 0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom|Block|Building", meta = (ClampMin = "0.0", ClampMax = "1.0"))
 	float BuildingBlockAltitudeRatio = 0.3;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom|Block|Building", meta = (ClampMin = "0.0", ClampMax = "1.0"))
 	float BuildingBlockSlopeRatio = 0.1;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom|Block|Building", meta = (ClampMin = "0"))
+	int32 BuildingBlockExTimes = 1;
 
 	//Input
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Custom|Input")
@@ -248,6 +256,8 @@ private:
 	//Init workflow
 	void InitWorkflow();
 	void InitLoopData();
+	void InitAreaBlockLevelExLoopDatas();
+	void InitBulidingBlockLevelExLoopDatas();
 
 	//Read file func
 	bool GetValidFilePath(const FString& RelPath, FString& FullPath);
@@ -306,31 +316,31 @@ private:
 	void InitCalTilesNormal();
 	void CalTileNormal(int32 Index);
 
-	//Set walking block level
-	void SetTilesWalkingBlockLevel();
-	void InitSetTilesWalkingBlockLevel();
-	bool SetTileWalkingBlock(FStructHexTileData& Data, FStructHexTileData& CheckData, int32 BlockLevel);
-	void SetTileWalkingBlockLevelByNeighbors(int32 Index);
-	bool SetTileWalkingBlockLevelByNeighbor(FStructHexTileData& Data, int32 Index);
+	//Set Area block level
+	void SetTilesAreaBlockLevel();
+	void InitSetTilesAreaBlockLevel();
+	bool SetTileAreaBlock(FStructHexTileData& Data, FStructHexTileData& CheckData, int32 BlockLevel);
+	void SetTileAreaBlockLevelByNeighbors(int32 Index);
+	bool SetTileAreaBlockLevelByNeighbor(FStructHexTileData& Data, int32 Index);
 
-	//Set walking block level extension
-	void SetTilesWalkingBlockLevelEx();
-	void InitSetTilesWalkingBlockLevelEx();
-	void SetTileWalkingBlockLevelByNeighborsEx(int32 Index);
+	//Set Area block level extension
+	void SetTilesAreaBlockLevelEx();
+	void InitSetTilesAreaBlockLevelEx();
+	void SetTileAreaBlockLevelByNeighborsEx(int32 Index);
 
-	//Check Terrain walking connection
-	void CheckTerrainWalkingConnection();
-	void InitCheckTerrainWalkingConnection();
-	void CheckTerrainWalkingConnectionWorkflow();
-	void BreakMaxWalkingBlockTilesToChunk();
-	void CheckChunksWalkingConnection();
-	bool FindTwoChunksWalkingConnection(TSet<int32>& ChunkStart, TSet<int32>& ChunkObj);
-	void CheckTerrainWalkingConnectionNotPass(int32 ChunkIndex);
+	//Check Terrain Area connection
+	void CheckTerrainAreaConnection();
+	void InitCheckTerrainAreaConnection();
+	void CheckTerrainAreaConnectionWorkflow();
+	void BreakMaxAreaBlockTilesToChunk();
+	void CheckChunksAreaConnection();
+	bool FindTwoChunksAreaConnection(TSet<int32>& ChunkStart, TSet<int32>& ChunkObj);
+	void CheckTerrainAreaConnectionNotPass(int32 ChunkIndex);
 
 	//Find tiles Island
 	void FindTilesIsland();
 	void FindTileIsLand(int32 Index);
-	bool Find_WBLM_By_WBL3(int32 Index);
+	bool Find_ABLM_By_ABL3(int32 Index);
 
 	//Set Building Block level
 	void SetTilesBuildingBlockLevel();
@@ -350,8 +360,8 @@ private:
 	int32 AddTileInstance(int32 Index);
 	int32 AddISM(int32 Index, UInstancedStaticMeshComponent* ISM, float ZOffset = 0.f);
 
-	void AddTileInstanceByWalkingBlock(int32 Index);
-	void AddTileInstanceDataByWalkingBlock(int32 TileIndex, int32 InstanceIndex);
+	void AddTileInstanceInRange(int32 Index);
+	void AddTileInstanceData(int32 TileIndex, int32 InstanceIndex);
 
 	bool IsInMapRange(int32 Index);
 	bool IsInMapRange(const FStructHexTileData& Tile);
@@ -373,6 +383,7 @@ public:
 private:
 	//Mouse over
 	Hex PosToHex(const FVector2D& Point, float Size);
+	void FindNeighborTilesByRadius(TArray<FIntPoint>& NeighborTiles, int32 CenterIndex, int32 Radius);
 	void AddMouseOverTilesInstance();
 	void RemoveMouseOverTilesInstance();
 

@@ -127,9 +127,29 @@ Hex Hex::Round(const Hex& InHex)
 	return Hex(FVector(q, r, s));
 }
 
+Hex Hex::Add(const Hex& InHexA, const Hex& InHexB)
+{
+	return Hex(FVector2D(InHexA.Coord.q + InHexB.Coord.q, InHexA.Coord.r + InHexB.Coord.r));
+}
+
 Hex Hex::Subtract(const Hex& InHexA, const Hex& InHexB)
 {
 	return Hex(FVector2D(InHexA.Coord.q - InHexB.Coord.q, InHexA.Coord.r - InHexB.Coord.r));
+}
+
+Hex Hex::Scale(const Hex& InHex, float Factor)
+{
+	return Hex(FVector2D(InHex.Coord.q * Factor, InHex.Coord.r * Factor));
+}
+
+Hex Hex::Direction(int32 Direction)
+{
+	return Hex(Hex().AxialDirectionVectors[Direction]);
+}
+
+Hex Hex::Neighbor(const Hex& InHex, int32 direction)
+{
+	return Add(InHex, Direction(direction));
 }
 
 float Hex::Distance(const Hex& InHexA, const Hex& InHexB)

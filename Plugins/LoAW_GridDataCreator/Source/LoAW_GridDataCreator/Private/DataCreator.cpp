@@ -3,6 +3,11 @@
 
 #include "DataCreator.h"
 
+#include <filesystem>
+#include <fstream>
+
+DEFINE_LOG_CATEGORY(DataCreator);
+
 // Sets default values
 ADataCreator::ADataCreator()
 {
@@ -10,6 +15,34 @@ ADataCreator::ADataCreator()
 	PrimaryActorTick.bCanEverTick = false;
 	PrimaryActorTick.bStartWithTickEnabled = false;
 
+}
+
+bool ADataCreator::CreateFilePath(const FString& RelPath, FString& FullPath)
+{
+	FullPath = FPaths::ProjectDir().Append(RelPath);
+	FString Path = FPaths::GetPath(FullPath);
+	if (!FPaths::DirectoryExists(Path)) {
+		if (std::filesystem::create_directories(*Path)) {
+			UE_LOG(DataCreator, Log, TEXT("Create directory %s success."), *Path);
+			return true;
+		}
+	}
+	return false;
+}
+
+void ADataCreator::WritePipeDelimiter(std::ofstream& ofs)
+{
+	ofs << TCHAR_TO_ANSI(*PipeDelim);
+}
+
+void ADataCreator::WriteColonDelimiter(std::ofstream& ofs)
+{
+	ofs << TCHAR_TO_ANSI(*ColonDelim);
+}
+
+void ADataCreator::WriteLineEnd(std::ofstream& ofs)
+{
+	ofs << std::endl;
 }
 
 // Called when the game starts or when spawned

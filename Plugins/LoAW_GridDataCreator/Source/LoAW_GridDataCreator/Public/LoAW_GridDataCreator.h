@@ -20,7 +20,7 @@ public:
 	
 private:
 
-	AActor* FindActor(TSubclassOf<AActor> ActorClass);
+	void FindActors(TSubclassOf<AActor> ActorClass, TArray<AActor*>& Actors);
 	void RegisterMenus();
 
 private:

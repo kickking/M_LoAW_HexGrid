@@ -47,25 +47,23 @@ void FLoAW_GridDataCreatorModule::ShutdownModule()
 
 void FLoAW_GridDataCreatorModule::PluginButtonClicked()
 {
-	AActor* FoundActor;
-	FoundActor = FindActor(ADataCreator::StaticClass());
-	if (FoundActor) {
-		ADataCreator* Creator = Cast<ADataCreator>(FoundActor);
-		Creator->CreateData();
+	TArray<AActor*> FoundActors;
+	FindActors(ADataCreator::StaticClass(), FoundActors);
+	for (int32 i = 0; i < FoundActors.Num(); i++) {
+		ADataCreator* Creator = Cast<ADataCreator>(FoundActors[i]);
+		if (Creator) {
+			Creator->CreateData();
+		}
+		
 	}
 }
 
-AActor* FLoAW_GridDataCreatorModule::FindActor(TSubclassOf<AActor> ActorClass)
+void FLoAW_GridDataCreatorModule::FindActors(TSubclassOf<AActor> ActorClass, TArray<AActor*>& Actors)
 {
-	TArray<AActor*> FoundActor;
 	UWorld* World = GEditor->GetEditorWorldContext().World();
 	if (World) {
-		UGameplayStatics::GetAllActorsOfClass(World, ActorClass, FoundActor);
-		if (FoundActor.Num() > 0) {
-			return FoundActor[0];
-		}
+		UGameplayStatics::GetAllActorsOfClass(World, ActorClass, Actors);
 	}
-	return nullptr;
 }
 
 void FLoAW_GridDataCreatorModule::RegisterMenus()
